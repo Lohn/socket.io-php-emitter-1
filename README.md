@@ -2,6 +2,8 @@
 
 ### *Maintained Fork*
 
+### FORK FOR SOCKET.IO VERSION 4.X
+
 This is a fork of [rase-/socket.io-php-emitter](https://github.com/rase-/socket.io-php-emitter).  
 Since the original repo is not being maintained anymore and is having compatibility problems with 
 newer versions of Socket.io, I recommend using this repo, and also submitting issues here.  
