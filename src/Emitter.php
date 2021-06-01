@@ -164,7 +164,7 @@ class Emitter
     $packet['type'] = 6;
     $packet['data'] = $args;
     $chn = 'socket.io-request#/#';
-    $packed = serialize($packet);
+    $packed = json_encode($packet);
     $this->redis->publish($chn, $packed);
     return $this;
   }
