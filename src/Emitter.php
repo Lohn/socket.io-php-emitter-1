@@ -9,10 +9,12 @@ if (!function_exists('msgpack_pack')) {
   require(__DIR__ . '/msgpack_pack.php');
 }
 
-class Emitter {
+class Emitter
+{
   private $uid = 'emitter';
 
-  public function __construct($redis = FALSE, $opts = array()) {
+  public function __construct($redis = FALSE, $opts = array())
+  {
     if (is_array($redis)) {
       $opts = $redis;
       $redis = FALSE;
@@ -34,7 +36,7 @@ class Emitter {
           $redis->connect($opts['host'], $opts['port']);
         }
       } else {
-        $redis = new \TinyRedisClient($opts['host'].':'.$opts['port']);
+        $redis = new \TinyRedisClient($opts['host'] . ':' . $opts['port']);
       }
     }
 
@@ -53,12 +55,14 @@ class Emitter {
    * Flags
    */
 
-  public function __get($flag) {
+  public function __get($flag)
+  {
     $this->_flags[$flag] = TRUE;
     return $this;
   }
 
-  private function readFlag($flag) {
+  private function readFlag($flag)
+  {
     return isset($this->_flags[$flag]) ? $this->_flags[$flag] : false;
   }
 
@@ -66,7 +70,8 @@ class Emitter {
    * Broadcasting
    */
 
-  public function in($room) {
+  public function in($room)
+  {
     if (!in_array($room, $this->_rooms)) {
       $this->_rooms[] = $room;
     }
@@ -75,7 +80,8 @@ class Emitter {
   }
 
   // Alias for in
-  public function to($room) {
+  public function to($room)
+  {
     return $this->in($room);
   }
 
@@ -83,7 +89,8 @@ class Emitter {
    * Namespace
    */
 
-  public function of($nsp) {
+  public function of($nsp)
+  {
     $this->_flags['nsp'] = $nsp;
     return $this;
   }
@@ -92,7 +99,8 @@ class Emitter {
    * Emitting
    */
 
-  public function emit() {
+  public function emit()
+  {
     $args = func_get_args();
     $packet = array();
 
@@ -123,7 +131,7 @@ class Emitter {
       'flags' => $this->_flags
     );
     $chn = $this->prefix . '#' . $packet['nsp'] . '#';
-    $packed = msgpack_pack(array($this->uid,$packet,$opts));
+    $packed = msgpack_pack(array($this->uid, $packet, $opts));
 
     // hack buffer extensions for msgpack with binary
     if ($packet['type'] == BINARY_EVENT) {
@@ -133,12 +141,12 @@ class Emitter {
 
     // publish
     if (is_array($this->_rooms) && count($this->_rooms) > 0) {
-        foreach ($this->_rooms as $room) {
-            $chnRoom = $chn . $room . '#';
-            $this->redis->publish($chnRoom, $packed);
-        }
+      foreach ($this->_rooms as $room) {
+        $chnRoom = $chn . $room . '#';
+        $this->redis->publish($chnRoom, $packed);
+      }
     } else {
-        $this->redis->publish($chn, $packed);
+      $this->redis->publish($chn, $packed);
     }
 
     // reset state
@@ -147,6 +155,17 @@ class Emitter {
 
     return $this;
   }
+  public function emitEvent()
+  {
+    $args = func_get_args();
+    $packet = array();
+    //"{\"uid\":\"JfTJEx\",\"type\":6,\"data\":[\"test\",\"world\"]}"
+    $packed['uid'] = 'JfTJEx';
+    $packet['type'] = 6;
+    $packet['data'] = $args;
+    $chn = 'socket.io-request#/#';
+    $packed = serialize($packet);
+    $this->redis->publish($chn, $packed);
+    return $this;
+  }
 }
-
-
